@@ -41,7 +41,12 @@ class UDP_socket:
                 
             self.send_thread= threading.Thread(target=send_func,args=(self,message))   
             self.send_thread.start()
-            self.send_thread.join() 
+
+    def stop_broadcast(self):
+        self.__broadcasting=False
+        self.send_thread.join()
+
+
 
     def listen(self):
         self.__listening=True
@@ -62,10 +67,14 @@ class UDP_socket:
 
 
 class TCP_socket:
-    def __init__(self,port):
+    def __init__(self,port,program):
+        self.program = program
         self.socket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.port=port
+        self.socket.bind(('0.0.0.0',self.port))
         self.__listening=False
+        self.__accepting=False
+        self.connections=list()
 
     def connect(self,host):
         
@@ -104,3 +113,32 @@ class TCP_socket:
 
     def close(self):
         self.socket.close()        
+
+
+    def allow_requests(self):
+        self.__accepting=True
+        self.socket.listen(3)
+        def handler_func(self:TCP_socket):
+            try:
+                while self.__accepting:
+                    connection,addr=self.socket.accept()  
+                    self.program.waiting_for_input=True 
+                    print(f"Recieved a request from {addr}, accept?(y/n)")
+                    usr_inp=input("")
+                    if usr_inp.lower()=='n':
+                        connection.close()
+                        self.program.waiting_for_input=False
+                    if usr_inp.lower()=='y':
+                        self.connections.append(connection)
+                        print("connected successfuly")
+                        self.program.waiting_for_input=False
+            except Exception:
+                raise RuntimeError("Error in accepting")
+        self.accepting_thread=threading.Thread(target=handler_func,args=(self,))    
+        self.accepting_thread.start()
+
+    def block_requests(self):
+        if self.__accepting:
+            self.__accepting=False
+            self.accepting_thread.join()
+                
