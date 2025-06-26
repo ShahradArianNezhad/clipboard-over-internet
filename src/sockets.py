@@ -53,7 +53,7 @@ class UDP_socket:
         def listen_func(self:UDP_socket):
             while self.__listening:    
                 data, addr = self.socket.recvfrom(1024)
-                if addr[0]!=self.ip : self.found_machines.append(addr[0])
+                if addr[0] not in self.found_machines : self.found_machines.append(addr[0])
         self.listen_thread = threading.Thread(target=listen_func,args=(self,))       
         self.listen_thread.start()
 
@@ -78,11 +78,16 @@ class TCP_socket:
 
     def connect(self,host):
         
-        try:
-            self.socket.connect((host,self.port))
-            print(f"connected to {host}:{self.port}")
-        except:
-            raise RuntimeError("connection failed")    
+        self.socket.connect((host,self.port))
+        data = self.socket.recv(1024)
+        if data=="declined":
+            print("access declined")
+            return False
+        elif data=="accepted":
+            print(f"connected to {host}")
+            return True
+
+              
         
         self.connected_to=host
         self.__is_connected=True
@@ -126,9 +131,11 @@ class TCP_socket:
                     print(f"Recieved a request from {addr}, accept?(y/n)")
                     usr_inp=input("")
                     if usr_inp.lower()=='n':
+                        connection.sendall("declined".encode())
                         connection.close()
                         self.program.waiting_for_input=False
                     if usr_inp.lower()=='y':
+                        connection.sendall("accepted".encode())
                         self.connections.append(connection)
                         print("connected successfuly")
                         self.program.waiting_for_input=False

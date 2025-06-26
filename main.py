@@ -3,4 +3,4 @@ from src.sockets import *
 
 program = TerminalProgram()
 
-program.display_devices()
+program.run()
