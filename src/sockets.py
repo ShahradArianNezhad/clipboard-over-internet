@@ -1,15 +1,15 @@
 import socket
 import threading
 import time
+from src.threads import *
 
 class UDP_socket:
-    def __init__(self,port):
+    def __init__(self,port,program):
+        self.program = program
         self.socket = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
         self.ip = self.get_ip()
         self.port = port
         self.socket.bind(('0.0.0.0',self.port))
-        self.__listening=False
-        self.__broadcasting=False
         self.found_machines=list()
 
 
@@ -30,37 +30,32 @@ class UDP_socket:
 
 
     def broadcast_message(self,message:str):
-            self.__broadcasting=True
             self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            def send_func(self:UDP_socket,message):
-                while self.__broadcasting:
+            def send_func(self:UDP_socket,message,thread:Thread):
+                while thread.running:
                     time.sleep(1)
                     sent =self.socket.sendto(message.encode(),('192.168.1.255',self.port))
                     if sent==0:
                         raise RuntimeError("socket connection broken")
                 
-            self.send_thread= threading.Thread(target=send_func,args=(self,message))   
+            self.send_thread=Thread(self.program,send_func,[self,message])
             self.send_thread.start()
 
     def stop_broadcast(self):
-        self.__broadcasting=False
-        self.send_thread.join()
+        self.send_thread.stop()
 
 
 
     def listen(self):
-        self.__listening=True
-        def listen_func(self:UDP_socket):
-            while self.__listening:    
+        def listen_func(self:UDP_socket,thread:Thread):
+            while thread.running:    
                 data, addr = self.socket.recvfrom(1024)
                 if addr[0] not in self.found_machines : self.found_machines.append(addr[0])
-        self.listen_thread = threading.Thread(target=listen_func,args=(self,))       
+        self.listen_thread = Thread(self.program,listen_func,[self])      
         self.listen_thread.start()
 
     def stop_listen(self):
-        if self.__listening:
-            self.__listening = False
-            self.listen_thread.join() 
+        self.listen_thread.stop()
 
     def close(self):
         self.socket.close()        
@@ -103,29 +98,26 @@ class TCP_socket:
             print("not connected to send any messages!")    
 
     def listen(self):
-        self.__listening=True
-        def listen_func(self:TCP_socket):
-            while self.__listening:
+        def listen_func(self:TCP_socket,thread:Thread):
+            while thread.running:
                 data = self.socket.recv(1024)
+                if thread.running==False:return 0
                 print(data.decode())
-        self.listen_thread = threading.Thread(target=listen_func,args=(self,))        
+        self.listen_thread = Thread(self.program,listen_func,[self])  
         self.listen_thread.start()
 
     def stop_listening(self):
-        if self.__listening:
-            self.__listening=False
-            self.listen_thread.join()    
+        self.listen_thread.stop()
 
     def close(self):
         self.socket.close()        
 
 
     def allow_requests(self):
-        self.__accepting=True
         self.socket.listen(3)
-        def handler_func(self:TCP_socket):
+        def handler_func(self:TCP_socket,thread:Thread):
             try:
-                while self.__accepting:
+                while thread.running:
                     connection,addr=self.socket.accept()  
                     self.program.waiting_for_input=True 
                     print(f"Recieved a request from {addr}, accept?(y/n)")
@@ -134,18 +126,20 @@ class TCP_socket:
                         connection.sendall("declined".encode())
                         connection.close()
                         self.program.waiting_for_input=False
-                    if usr_inp.lower()=='y':
+                    elif usr_inp.lower()=='y':
                         connection.sendall("accepted".encode())
                         self.connections.append(connection)
                         print("connected successfuly")
                         self.program.waiting_for_input=False
+                    else:
+                        raise Exception
+                            
             except Exception:
                 raise RuntimeError("Error in accepting")
-        self.accepting_thread=threading.Thread(target=handler_func,args=(self,))    
+        self.accepting_thread=Thread(self.program,handler_func,[self])
         self.accepting_thread.start()
 
     def block_requests(self):
-        if self.__accepting:
-            self.__accepting=False
-            self.accepting_thread.join()
+        self.accepting_thread.stop()
+
                 
