@@ -70,6 +70,7 @@ class TerminalProgram:
         self.input_thread.start()
 
     def handel_connection_input(self,ip):
+        self.udpSocket.stop_broadcast()
         self.udpSocket.close()
 
         print("waiting for response...")
@@ -80,7 +81,9 @@ class TerminalProgram:
 
 
     def main(self):
+        print(50)
         self.tcpSocket.listen()  
+        print(100)
         while True:
             self.tcpSocket.send_message("allo")
             time.sleep(1)
@@ -93,15 +96,14 @@ class TerminalProgram:
             if self.__status=="connecting":
                 self.tcpSocket.block_requests()
                 self.handel_connection_input(self.udpSocket.found_machines[self.usrinp-1])
-            elif self.__status=="polling" or self.__status=="None":
+            elif self.__status=="polling":
                 self.display_devices()
                 self.display_thread.join()   
             elif self.__status=="working":
-                self.main
+                self.main()
 
 
 
-      
-
+        
 
 

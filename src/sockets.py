@@ -34,6 +34,7 @@ class UDP_socket:
             def send_func(self:UDP_socket,message,thread:Thread):
                 while thread.running:
                     time.sleep(1)
+                    if thread.running==False:break
                     sent =self.socket.sendto(message.encode(),('192.168.1.255',self.port))
                     if sent==0:
                         raise RuntimeError("socket connection broken")
@@ -64,22 +65,23 @@ class UDP_socket:
 class TCP_socket:
     def __init__(self,port,program):
         self.program = program
-        self.socket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.__acting_as="None"
+        self.server_socket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.client_socket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.port=port
-        self.socket.bind(('0.0.0.0',self.port))
-        self.__listening=False
-        self.__accepting=False
+        self.server_socket.bind(('0.0.0.0',self.port))
         self.connections=list()
 
     def connect(self,host):
-        
-        self.socket.connect((host,self.port))
-        data = self.socket.recv(1024)
+        self.client_socket.connect((host,self.port))
+        data = self.client_socket.recv(1024).decode()
         if data=="declined":
             print("access declined")
             return False
         elif data=="accepted":
             print(f"connected to {host}")
+            self.__acting_as="client"
             return True
 
               
@@ -89,36 +91,47 @@ class TCP_socket:
 
     def send_message(self,message:str):
         if self.__is_connected:
-            try:
-                self.socket.sendall(message.encode())
-                print(f"sent {message} to {self.connected_to}")
-            except Exception:
-                raise RuntimeError(f"couldnt send message through tcp to {self.connected_to}")    
-        else:
-            print("not connected to send any messages!")    
+            if self.__acting_as=="client":
+                try:
+                    self.client_socket.sendall(message.encode())
+                    print(f"sent {message} to {self.connected_to}")
+                except Exception:
+                    raise RuntimeError(f"couldnt send message through tcp to {self.connected_to}")    
+            elif self.__acting_as=="server":
+                self.connections[0].sendall(message.encode())   
+
 
     def listen(self):
-        def listen_func(self:TCP_socket,thread:Thread):
-            while thread.running:
-                data = self.socket.recv(1024)
-                if thread.running==False:return 0
-                print(data.decode())
+        if self.__acting_as=="client":
+            def listen_func(self:TCP_socket,thread:Thread):
+                while thread.running:
+                    data = self.client_socket.recv(1024)
+                    if thread.running==False:return 0
+                    print(data.decode())
+        elif self.__acting_as=="server":
+            def listen_func(self:TCP_socket,thread:Thread):
+                while thread.running:
+                    data = self.connections[0].recv(1024)
+                    if thread.running==False:return 0
+                    print(data.decode())
+
         self.listen_thread = Thread(self.program,listen_func,[self])  
         self.listen_thread.start()
 
     def stop_listening(self):
         self.listen_thread.stop()
 
-    def close(self):
-        self.socket.close()        
-
+    def client_close(self):
+        self.client_socket.close()        
+    def server_close(self):
+        self.server_socket.close()
 
     def allow_requests(self):
-        self.socket.listen(3)
+        self.server_socket.listen(3)
         def handler_func(self:TCP_socket,thread:Thread):
             try:
                 while thread.running:
-                    connection,addr=self.socket.accept()  
+                    connection,addr=self.server_socket.accept()  
                     self.program.waiting_for_input=True 
                     print(f"Recieved a request from {addr}, accept?(y/n)")
                     usr_inp=input("")
@@ -127,8 +140,11 @@ class TCP_socket:
                         connection.close()
                         self.program.waiting_for_input=False
                     elif usr_inp.lower()=='y':
+                        self.__acting_as="server"
                         connection.sendall("accepted".encode())
                         self.connections.append(connection)
+                        self.__is_connected=True
+                        self.connected_to=addr
                         print("connected successfuly")
                         self.program.waiting_for_input=False
                     else:
