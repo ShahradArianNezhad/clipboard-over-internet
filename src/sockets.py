@@ -107,13 +107,15 @@ class TCP_socket:
                 while thread.running:
                     data = self.client_socket.recv(1024)
                     if thread.running==False:return 0
-                    print(data.decode())
+                    print("recieved: ",data.decode())
+                    self.program.clipboard.copy_to_clipboard(data.decode())
         elif self.__acting_as=="server":
             def listen_func(self:TCP_socket,thread:Thread):
                 while thread.running:
                     data = self.connections[0].recv(1024)
                     if thread.running==False:return 0
-                    print(data.decode())
+                    print("recieved: ",data.decode())
+                    self.program.clipboard.copy_to_clipboard(data.decode())
 
         self.listen_thread = Thread(self.program,listen_func,[self])  
         self.listen_thread.start()

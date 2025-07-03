@@ -3,6 +3,7 @@ from src.sockets import *
 import time
 import threading
 from src.threads import *
+from src.clipboard import *
 
 PORT=6969
 
@@ -13,6 +14,7 @@ class TerminalProgram:
         self.udpSocket = UDP_socket(PORT,self)
         self.tcpSocket = TCP_socket(PORT,self)
         self.__status="polling"
+        self.clipboard=ClipboardManager(self)
         self.threadPool=ThreadPool()
         self.tcpSocket.allow_requests()
 
@@ -81,12 +83,8 @@ class TerminalProgram:
 
 
     def main(self):
-        print(50)
         self.tcpSocket.listen()  
-        print(100)
-        while True:
-            self.tcpSocket.send_message("allo")
-            time.sleep(1)
+        self.clipboard.start()
 
 
 
