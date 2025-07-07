@@ -36,7 +36,10 @@ class UDP_socket:
                 while thread.running:
                     time.sleep(1)
                     if thread.running==False:break
-                    sent =self.socket.sendto(message.encode(),('192.168.1.255',self.port))
+                    try:
+                        sent =self.socket.sendto(message.encode(),('192.168.1.255',self.port))
+                    except:
+                        pass
                     if sent==0:
                         raise RuntimeError("socket connection broken")
                 
@@ -82,6 +85,8 @@ class TCP_socket:
         data = self.client_socket.recv(1024).decode()
         if data=="declined":
             print("access declined")
+            self.client_close()
+            self.client_socket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             return False
         elif data=="accepted":
             self.connected_to=host
@@ -99,7 +104,6 @@ class TCP_socket:
             if self.__acting_as=="client":
                 try:
                     self.client_socket.sendall(message.encode())
-                    print(f"sent {message} to {self.connected_to}")
                 except Exception:
                     raise RuntimeError(f"couldnt send message through tcp to {self.connected_to}")    
             elif self.__acting_as=="server":
