@@ -26,5 +26,6 @@ class ClipboardManager:
 
     def copy_to_clipboard(self,msg):
         pyperclip.copy(msg)
+        self.clipboard=msg
 
 

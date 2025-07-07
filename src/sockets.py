@@ -81,14 +81,15 @@ class TCP_socket:
             print("access declined")
             return False
         elif data=="accepted":
+            self.connected_to=host
+            self.__is_connected=True
             print(f"connected to {host}")
             self.__acting_as="client"
             return True
 
               
         
-        self.connected_to=host
-        self.__is_connected=True
+        
 
     def send_message(self,message:str):
         if self.__is_connected:

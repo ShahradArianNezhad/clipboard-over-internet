@@ -90,9 +90,7 @@ class TerminalProgram:
     def main(self):
         print(10000)
         self.tcpSocket.listen()  
-        # self.clipboard.start()
-        time.sleep(8)
-        self.tcpSocket.send_message("allo")
+        self.clipboard.start()
         self.tcpSocket.listen_thread.finish()
 
 
