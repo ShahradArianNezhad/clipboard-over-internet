@@ -76,15 +76,17 @@ class TerminalProgram:
         self.input_thread.start()
 
     def handel_connection_input(self,ip):
-        self.udpSocket.stop_broadcast()
-        self.udpSocket.stop_listen()
-        self.udpSocket.close()
 
         print("waiting for response...")
         if self.tcpSocket.connect(ip):
+            self.udpSocket.stop_broadcast()
+            self.udpSocket.stop_listen()
+            self.udpSocket.close()
             print("connected!")
             time.sleep(1)
             self.__status="working"
+        else:
+            self.__status="polling"
 
 
     def main(self):

@@ -51,7 +51,10 @@ class UDP_socket:
     def listen(self):
         def listen_func(self:UDP_socket,thread:Thread):
             while thread.running:    
-                data, addr = self.socket.recvfrom(1024)
+                try:
+                    data, addr = self.socket.recvfrom(1024)
+                except:
+                    pass
                 if addr[0] not in self.found_machines : self.found_machines.append(addr[0])
         self.listen_thread = Thread(self.program,listen_func,[self])      
         self.listen_thread.start()
@@ -147,6 +150,7 @@ class TCP_socket:
                     if usr_inp.lower()=='n':
                         connection.sendall("declined".encode())
                         connection.close()
+                        self.program.set_status("polling")
                         self.program.waiting_for_input=False
                     elif usr_inp.lower()=='y':
                         self.__acting_as="server"
