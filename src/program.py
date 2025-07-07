@@ -20,6 +20,9 @@ class TerminalProgram:
 
     def clear_terminal(self):
         os.system('cls' if os.name=='nt' else 'clear')
+    
+    def set_status(self,en):
+        self.__status=en
 
     def display_devices(self):
         self.__status = "polling"
@@ -56,16 +59,17 @@ class TerminalProgram:
         self.usrinp=0
         def getinp(self:TerminalProgram):
             self.usrinp=input("")
-            try:
-                self.usrinp =int(self.usrinp)
-                if self.usrinp>len(self.udpSocket.found_machines) or self.usrinp<1:
-                    raise TypeError
-            except:
-                raise TypeError("enter an int inside the given range")   
-            self.__status="connecting" 
-            self.clear_terminal()
-            
-
+            if self.__status=="polling":
+                try:
+                    self.usrinp =int(self.usrinp)
+                    if self.usrinp>len(self.udpSocket.found_machines) or self.usrinp<1:
+                        raise TypeError
+                except:
+                    raise TypeError("enter an int inside the given range")   
+                self.__status="connecting" 
+                self.clear_terminal()
+            if self.__status=="accept":
+                pass 
             
             
         self.input_thread=threading.Thread(target=getinp,args=(self,))
@@ -73,6 +77,7 @@ class TerminalProgram:
 
     def handel_connection_input(self,ip):
         self.udpSocket.stop_broadcast()
+        self.udpSocket.stop_listen()
         self.udpSocket.close()
 
         print("waiting for response...")
@@ -83,8 +88,12 @@ class TerminalProgram:
 
 
     def main(self):
+        print(10000)
         self.tcpSocket.listen()  
-        self.clipboard.start()
+        # self.clipboard.start()
+        time.sleep(8)
+        self.tcpSocket.send_message("allo")
+        self.tcpSocket.listen_thread.finish()
 
 
 

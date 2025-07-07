@@ -11,6 +11,7 @@ class UDP_socket:
         self.port = port
         self.socket.bind(('0.0.0.0',self.port))
         self.found_machines=list()
+        self.__is_connected=False
 
 
 
@@ -135,8 +136,13 @@ class TCP_socket:
                 while thread.running:
                     connection,addr=self.server_socket.accept()  
                     self.program.waiting_for_input=True 
+                    self.program.set_status("accept")
+                    time.sleep(2)
+                    self.program.clear_terminal()
                     print(f"Recieved a request from {addr}, accept?(y/n)")
-                    usr_inp=input("")
+                    self.program.input_thread.join()
+                    print(self.program.usrinp)
+                    usr_inp=self.program.usrinp
                     if usr_inp.lower()=='n':
                         connection.sendall("declined".encode())
                         connection.close()
@@ -148,6 +154,7 @@ class TCP_socket:
                         self.__is_connected=True
                         self.connected_to=addr
                         print("connected successfuly")
+                        self.program.set_status("working")
                         self.program.waiting_for_input=False
                     else:
                         raise Exception

@@ -14,7 +14,7 @@ class ClipboardManager:
             while thread.running:
                 if self.clipboard != pyperclip.paste():
                     self.clipboard = pyperclip.paste()
-                    self.program.tcpSocket.send_message(self,self.clipboard)
+                    self.program.tcpSocket.send_message(self.clipboard)
                     print("sending: ",pyperclip.paste())
                 time.sleep(0.5)
         self.reading_thread=Thread(self.program,getclipfunc,[self])
