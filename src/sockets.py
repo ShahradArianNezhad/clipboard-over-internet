@@ -52,10 +52,13 @@ class UDP_socket:
 
 
     def listen(self):
+        self.socket.settimeout(3)
         def listen_func(self:UDP_socket,thread:Thread):
             while thread.running:    
                 try:
                     data, addr = self.socket.recvfrom(1024)
+                    if not thread.running:
+                        continue
                 except:
                     pass
                 if addr[0] not in self.found_machines : self.found_machines.append(addr[0])
@@ -139,10 +142,13 @@ class TCP_socket:
 
     def allow_requests(self):
         self.server_socket.listen(3)
+        self.server_socket.settimeout(3)
         def handler_func(self:TCP_socket,thread:Thread):
             try:
                 while thread.running:
                     connection,addr=self.server_socket.accept()  
+                    if not thread.running:
+                        continue
                     self.program.waiting_for_input=True 
                     self.program.set_status("accept")
                     time.sleep(2)
@@ -168,8 +174,8 @@ class TCP_socket:
                     else:
                         raise Exception
                             
-            except Exception:
-                raise RuntimeError("Error in accepting")
+            except:
+                pass
         self.accepting_thread=Thread(self.program,handler_func,[self])
         self.accepting_thread.start()
 

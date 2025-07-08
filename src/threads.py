@@ -9,7 +9,7 @@ class Thread:
         self.func=func
         self.running=False
         self.__thread= threading.Thread(target=self.func,args=self.args)
-        self.__name__="function : "+self.func.__name__
+        self.__name__=self.func.__name__
 
     def start(self):
         self.running=True
@@ -24,13 +24,13 @@ class Thread:
         self.__thread.join()
 
     def __str__(self) -> str:
-        return "function : "+self.func.__name__
+        return self.func.__name__
 
 
 
 class ThreadPool():
     def __init__(self) -> None:
-        self.__pool=list()
+        self.__pool:list[Thread]=list()
 
     def add(self,thread:Thread):
         self.__pool.append(thread)
@@ -44,6 +44,16 @@ class ThreadPool():
         for i in self.__pool:
             str+=i.__name__
         return str    
+    
+    def shutdown(self):
+        for thread in self.__pool.copy():
+            if thread.__name__ == "getinp":
+                print("press any key to continue..")
+            thread.stop()
+            thread.finish()
+
+
+
         
 
 

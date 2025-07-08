@@ -20,9 +20,14 @@ class TerminalProgram:
 
     def clear_terminal(self):
         os.system('cls' if os.name=='nt' else 'clear')
+
+    def shutdown(self,signum,frame):
+        self.set_status("shutdown")
+
+
     
-    def set_status(self,en):
-        self.__status=en
+    def set_status(self,status):
+        self.__status=status
 
     def display_devices(self):
         self.__status = "polling"
@@ -30,9 +35,9 @@ class TerminalProgram:
         self.udpSocket.listen()
         self.clear_terminal()
 
-        def print_devices(self:TerminalProgram):
+        def print_devices(self:TerminalProgram,thread:Thread):
             dots=1
-            while self.__status=="polling":
+            while self.__status=="polling" and thread.running:
                 while not self.waiting_for_input:
                     print("----------------Devices----------------")
                     for i in range(len(self.udpSocket.found_machines)):
@@ -49,15 +54,15 @@ class TerminalProgram:
                     time.sleep(1)
                     if self.__status!="polling":break
                     self.clear_terminal()
-                time.sleep(0.5)    
-        self.display_thread= threading.Thread(target=print_devices,args=(self,))   
+                time.sleep(0.1)    
+        self.display_thread= Thread(self,print_devices,[self]) 
         self.display_thread.start()   
         self.get_connection_input()
 
 
     def get_connection_input(self):
         self.usrinp=0
-        def getinp(self:TerminalProgram):
+        def getinp(self:TerminalProgram,thread:Thread):
             self.usrinp=input("")
             if self.__status=="polling":
                 try:
@@ -72,7 +77,7 @@ class TerminalProgram:
                 pass 
             
             
-        self.input_thread=threading.Thread(target=getinp,args=(self,))
+        self.input_thread=Thread(self,getinp,[self])
         self.input_thread.start()
 
     def handel_connection_input(self,ip):
@@ -104,9 +109,18 @@ class TerminalProgram:
                 self.handel_connection_input(self.udpSocket.found_machines[self.usrinp-1])
             elif self.__status=="polling":
                 self.display_devices()
-                self.display_thread.join()   
+                self.display_thread.finish()   
             elif self.__status=="working":
                 self.main()
+            elif self.__status=="shutdown":
+                self.clear_terminal()
+                print("shutting down...")
+                self.threadPool.shutdown()
+                self.tcpSocket.server_close()
+                self.udpSocket.close()
+                break
+                
+            time.sleep(0.1)
 
 
 
