@@ -5,11 +5,10 @@ import threading
 from src.threads import *
 from src.clipboard import *
 
-PORT=6969
 
 class TerminalProgram:
 
-    def __init__(self):
+    def __init__(self,PORT):
         self.waiting_for_input=False
         self.udpSocket = UDP_socket(PORT,self)
         self.tcpSocket = TCP_socket(PORT,self)
@@ -22,9 +21,10 @@ class TerminalProgram:
         os.system('cls' if os.name=='nt' else 'clear')
 
     def shutdown(self,signum,frame):
+        print('\n')
         if self.__status=="connecting":
-            print(1)
             self.tcpSocket.client_close()
+        print("press any key to shutdown")
         self.set_status("shutdown")
 
 

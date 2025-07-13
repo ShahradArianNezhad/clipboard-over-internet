@@ -47,8 +47,6 @@ class ThreadPool():
     
     def shutdown(self):
         for thread in self.__pool.copy():
-            if thread.__name__ == "getinp":
-                print("press any key to continue..")
             thread.stop()
             thread.finish()
 
