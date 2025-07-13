@@ -8,7 +8,7 @@ from src.clipboard import *
 
 class TerminalProgram:
 
-    def __init__(self,PORT):
+    def __init__(self,PORT=6969):
         self.waiting_for_input=False
         self.udpSocket = UDP_socket(PORT,self)
         self.tcpSocket = TCP_socket(PORT,self)

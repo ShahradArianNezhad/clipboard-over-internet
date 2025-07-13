@@ -12,7 +12,12 @@ def main():
     parser.add_argument("-p", type=int, default=6969, help="Port to run the server on (default: 6969)")
     args = parser.parse_args()
 
-    program = TerminalProgram(args.port)
+    if args.port != 6969:
+        port = args.port
+    if args.p != 6969:
+        port=args.p
+
+    program = TerminalProgram(port)
 
     signal.signal(signal.SIGINT,program.shutdown)
 
