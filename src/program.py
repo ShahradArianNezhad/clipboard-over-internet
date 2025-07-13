@@ -22,6 +22,9 @@ class TerminalProgram:
         os.system('cls' if os.name=='nt' else 'clear')
 
     def shutdown(self,signum,frame):
+        if self.__status=="connecting":
+            print(1)
+            self.tcpSocket.client_close()
         self.set_status("shutdown")
 
 
@@ -36,7 +39,6 @@ class TerminalProgram:
         self.clear_terminal()
 
         def print_devices(self:TerminalProgram,thread:Thread):
-            dots=1
             while self.__status=="polling" and thread.running:
                 while not self.waiting_for_input:
                     print("----------------Devices----------------")
@@ -44,27 +46,26 @@ class TerminalProgram:
                         if self.udpSocket.ip == self.udpSocket.found_machines[i]:
                             print(i+1,". ",self.udpSocket.found_machines[i],' (you)')
                         else: print(i+1,". ",self.udpSocket.found_machines[i])
-                    print('searching','.'*dots)
-                    if dots==3:dots=0
-                    dots+=1
+                    print('type r to refresh')
                     print('\n')   
                     
                     print("---------------------------------------")
                     print("enter the number of the ip you want to connect to", end=":",flush=True)
-                    time.sleep(1)
+                    self.get_input()
+                    self.input_thread.finish()
                     if self.__status!="polling":break
                     self.clear_terminal()
-                time.sleep(0.1)    
+                time.sleep(1)    
         self.display_thread= Thread(self,print_devices,[self]) 
         self.display_thread.start()   
-        self.get_connection_input()
 
 
-    def get_connection_input(self):
+    def get_input(self):
         self.usrinp=0
         def getinp(self:TerminalProgram,thread:Thread):
             self.usrinp=input("")
             if self.__status=="polling":
+                if self.usrinp.lower()=="r":return 0
                 try:
                     self.usrinp =int(self.usrinp)
                     if self.usrinp>len(self.udpSocket.found_machines) or self.usrinp<1:

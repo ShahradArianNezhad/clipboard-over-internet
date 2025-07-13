@@ -1,0 +1,6 @@
+threading
+socket
+time
+pyperclip
+os
+signal

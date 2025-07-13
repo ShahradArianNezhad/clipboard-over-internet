@@ -85,7 +85,9 @@ class TCP_socket:
 
     def connect(self,host):
         self.client_socket.connect((host,self.port))
+
         data = self.client_socket.recv(1024).decode()
+
         if data=="declined":
             print("access declined")
             self.client_close()
@@ -155,7 +157,6 @@ class TCP_socket:
                     self.program.clear_terminal()
                     print(f"Recieved a request from {addr}, accept?(y/n)")
                     self.program.input_thread.join()
-                    print(self.program.usrinp)
                     usr_inp=self.program.usrinp
                     if usr_inp.lower()=='n':
                         connection.sendall("declined".encode())
