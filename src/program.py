@@ -9,6 +9,7 @@ from src.clipboard import *
 class TerminalProgram:
 
     def __init__(self,PORT=6969):
+        self.username = os.getlogin()
         self.waiting_for_input=False
         self.udpSocket = UDP_socket(PORT,self)
         self.tcpSocket = TCP_socket(PORT,self)
@@ -34,7 +35,7 @@ class TerminalProgram:
 
     def display_devices(self):
         self.__status = "polling"
-        self.udpSocket.broadcast_message("im here!")
+        self.udpSocket.broadcast_message(self.username)
         self.udpSocket.listen()
         self.clear_terminal()
 
@@ -42,15 +43,15 @@ class TerminalProgram:
             while self.__status=="polling" and thread.running:
                 while not self.waiting_for_input:
                     print("----------------Devices----------------")
-                    for i in range(len(self.udpSocket.found_machines)):
-                        if self.udpSocket.ip == self.udpSocket.found_machines[i]:
-                            print(i+1,". ",self.udpSocket.found_machines[i],' (you)')
-                        else: print(i+1,". ",self.udpSocket.found_machines[i])
+                    for i,j in self.udpSocket.found_machines.items():
+                        if self.udpSocket.ip == j:
+                            print(i," : ",j,' (you)')
+                        else: print(i," : ",j)
                     print('type r to refresh')
                     print('\n')   
                     
                     print("---------------------------------------")
-                    print("enter the number of the ip you want to connect to", end=":",flush=True)
+                    print("enter the name of the ip you want to connect to", end=":",flush=True)
                     self.get_input()
                     self.input_thread.finish()
                     if self.__status!="polling":break
@@ -66,12 +67,10 @@ class TerminalProgram:
             self.usrinp=input("")
             if self.__status=="polling":
                 if self.usrinp.lower()=="r":return 0
-                try:
-                    self.usrinp =int(self.usrinp)
-                    if self.usrinp>len(self.udpSocket.found_machines) or self.usrinp<1:
-                        raise TypeError
-                except:
-                    raise TypeError("enter an int inside the given range")   
+                self.usrinp=self.usrinp.lower()
+                if self.usrinp not in self.udpSocket.found_machines:
+                    return 0
+
                 self.__status="connecting" 
                 self.clear_terminal()
             if self.__status=="accept":
@@ -107,7 +106,7 @@ class TerminalProgram:
         while True:
             if self.__status=="connecting":
                 self.tcpSocket.block_requests()
-                self.handel_connection_input(self.udpSocket.found_machines[self.usrinp-1])
+                self.handel_connection_input(self.udpSocket.found_machines[self.usrinp])
             elif self.__status=="polling":
                 self.display_devices()
                 self.display_thread.finish()   

@@ -10,7 +10,7 @@ class UDP_socket:
         self.ip = self.get_ip()
         self.port = port
         self.socket.bind(('0.0.0.0',self.port))
-        self.found_machines=list()
+        self.found_machines=dict()
         self.__is_connected=False
 
 
@@ -61,7 +61,7 @@ class UDP_socket:
                         continue
                 except:
                     pass
-                if addr[0] not in self.found_machines : self.found_machines.append(addr[0])
+                if data.decode() not in self.found_machines : self.found_machines[data.decode()]=addr[0]
         self.listen_thread = Thread(self.program,listen_func,[self])      
         self.listen_thread.start()
 
