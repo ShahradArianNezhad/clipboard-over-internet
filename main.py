@@ -11,7 +11,7 @@ def main():
     parser.add_argument("--port", type=int, default=6969, help="Port to run the server on (default: 6969)")
     parser.add_argument("-p", type=int, default=6969, help="Port to run the server on (default: 6969)")
     args = parser.parse_args()
-
+    port = 6969
     if args.port != 6969:
         port = args.port
     if args.p != 6969:
