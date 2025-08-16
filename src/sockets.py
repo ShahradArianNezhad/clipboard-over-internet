@@ -122,7 +122,8 @@ class TCP_socket:
                 except Exception:
                     raise RuntimeError(f"couldnt send message through tcp to {self.connected_to}")    
             elif self.__acting_as=="server":
-                self.connections[0].sendall(message.encode())   
+                for connection in self.connections
+                connection.sendall(message.encode())   
 
 
     def listen(self):
