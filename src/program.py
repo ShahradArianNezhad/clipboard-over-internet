@@ -41,6 +41,7 @@ class TerminalProgram:
         self.udpSocket.broadcast_message(self.username)
         self.udpSocket.listen()
         self.clear_terminal()
+        rowCount=5
 
         def print_devices(self:TerminalProgram,thread:Thread):
             while self.__status=="polling" and thread.running:
@@ -50,8 +51,8 @@ class TerminalProgram:
                         if self.udpSocket.ip == j:
                             print(i," : ",j,' (you)')
                         else: print(i," : ",j)
+                    for i in range(rowCount-len(self.udpSocket.found_machines)):print()
                     print('type r to refresh')
-                    print('\n')   
                     
                     print("---------------------------------------")
                     print("enter the name of the ip you want to connect to", end=":",flush=True)
