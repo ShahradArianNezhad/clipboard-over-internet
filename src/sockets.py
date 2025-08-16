@@ -34,7 +34,7 @@ class UDP_socket:
             self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             def send_func(self:UDP_socket,message,thread:Thread):
                 while thread.running:
-                    time.sleep(1)
+                    time.sleep(0.25)
                     if thread.running==False:break
                     try:
                         sent =self.socket.sendto(message.encode(),('192.168.1.255',self.port))
@@ -52,8 +52,9 @@ class UDP_socket:
 
 
     def listen(self):
-        self.socket.settimeout(3)
+        self.socket.settimeout(0.75)
         def listen_func(self:UDP_socket,thread:Thread):
+            data=None
             while thread.running:    
                 try:
                     data, addr = self.socket.recvfrom(1024)
@@ -61,7 +62,7 @@ class UDP_socket:
                         continue
                 except:
                     pass
-                if data.decode() not in self.found_machines : self.found_machines[data.decode()]=addr[0]
+                if data!=None and data.decode() not in self.found_machines : self.found_machines[data.decode()]=addr[0]
         self.listen_thread = Thread(self.program,listen_func,[self])      
         self.listen_thread.start()
 
@@ -144,7 +145,7 @@ class TCP_socket:
 
     def allow_requests(self):
         self.server_socket.listen(3)
-        self.server_socket.settimeout(3)
+        self.server_socket.settimeout(0.75)
         def handler_func(self:TCP_socket,thread:Thread):
             try:
                 while thread.running:
@@ -153,7 +154,7 @@ class TCP_socket:
                         continue
                     self.program.waiting_for_input=True 
                     self.program.set_status("accept")
-                    time.sleep(2)
+                    time.sleep(0.5)
                     self.program.clear_terminal()
                     print(f"Recieved a request from {addr}, accept?(y/n)")
                     self.program.input_thread.join()

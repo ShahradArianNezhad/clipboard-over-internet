@@ -56,7 +56,7 @@ class TerminalProgram:
                     self.input_thread.finish()
                     if self.__status!="polling":break
                     self.clear_terminal()
-                time.sleep(1)    
+                time.sleep(0.5)    
         self.display_thread= Thread(self,print_devices,[self]) 
         self.display_thread.start()   
 
