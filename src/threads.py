@@ -22,6 +22,7 @@ class Thread:
 
     def finish(self):
         self.__thread.join()
+        self.program.threadPool.remove(self)
 
     def __str__(self) -> str:
         return self.func.__name__
@@ -42,7 +43,7 @@ class ThreadPool():
     def __str__(self) -> str:
         str=""
         for i in self.__pool:
-            str+=i.__name__
+            str+=i.__name__+", "
         return str    
     
     def shutdown(self):

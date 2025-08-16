@@ -55,8 +55,7 @@ class TerminalProgram:
                     self.get_input()
                     self.input_thread.finish()
                     if self.__status!="polling":break
-                    self.clear_terminal()
-                time.sleep(0.5)    
+                    self.clear_terminal()  
         self.display_thread= Thread(self,print_devices,[self]) 
         self.display_thread.start()   
 
@@ -66,7 +65,8 @@ class TerminalProgram:
         def getinp(self:TerminalProgram,thread:Thread):
             self.usrinp=input("")
             if self.__status=="polling":
-                if self.usrinp.lower()=="r":return 0
+                if self.usrinp.lower()=="r":
+                    return 0
                 self.usrinp=self.usrinp.lower()
                 if self.usrinp not in self.udpSocket.found_machines:
                     return 0
@@ -74,7 +74,7 @@ class TerminalProgram:
                 self.__status="connecting" 
                 self.clear_terminal()
             if self.__status=="accept":
-                pass 
+                return 0 
             
             
         self.input_thread=Thread(self,getinp,[self])

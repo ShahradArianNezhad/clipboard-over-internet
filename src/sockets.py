@@ -80,14 +80,20 @@ class TCP_socket:
         self.server_socket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.client_socket=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client_socket.settimeout(0.5)
         self.port=port
         self.server_socket.bind(('0.0.0.0',self.port))
         self.connections=list()
 
     def connect(self,host):
         self.client_socket.connect((host,self.port))
-
-        data = self.client_socket.recv(1024).decode()
+        print(self.program.threadPool)
+        data=None
+        while data==None:
+            try:
+                data = self.client_socket.recv(1024).decode()
+            except:
+                pass
 
         if data=="declined":
             print("access declined")
