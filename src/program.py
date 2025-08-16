@@ -18,6 +18,9 @@ class TerminalProgram:
         self.threadPool=ThreadPool()
         self.tcpSocket.allow_requests()
 
+    def status(self):
+        return self.__status
+
     def clear_terminal(self):
         os.system('cls' if os.name=='nt' else 'clear')
 

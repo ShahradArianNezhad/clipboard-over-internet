@@ -86,10 +86,12 @@ class TCP_socket:
         self.connections=list()
 
     def connect(self,host):
-        self.client_socket.connect((host,self.port))
-        print(self.program.threadPool)
+        try:
+            self.client_socket.connect((host,self.port))
+        except:
+            raise TimeoutError
         data=None
-        while data==None:
+        while data==None and self.program.status!="shutdown":
             try:
                 data = self.client_socket.recv(1024).decode()
             except:
@@ -106,6 +108,7 @@ class TCP_socket:
             print(f"connected to {host}")
             self.__acting_as="client"
             return True
+        return False
 
               
         
